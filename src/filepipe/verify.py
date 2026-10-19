@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from rapidfuzz import fuzz
 
 from filepipe.extract.base import FileExtraction, Value
-from filepipe.extract.parse import days_between, same_name
+from filepipe.extract.parse import days_between, same_person
 from filepipe.rules.surplus import Member, compute, monthly_from_pay
 
 STALE_DAYS = 45            # newest pay stub older than this at signing is not current proof of income
@@ -65,7 +65,7 @@ def verify(fx: FileExtraction) -> FileResult:
     findings: list[Finding] = []
     name = _v(it, "name") or ""
     stubs = [s for s in fx.stubs if _v(s, "net") is not None]
-    mine = [s for s in stubs if not name or not _v(s, "employee") or same_name(_v(s, "employee"), name, 80)]
+    mine = [s for s in stubs if not name or not _v(s, "employee") or same_person(_v(s, "employee"), name)]
     spouse = [s for s in stubs if s not in mine]
     mine.sort(key=lambda s: _v(s, "pay_date") or "", reverse=True)
     spouse.sort(key=lambda s: _v(s, "pay_date") or "", reverse=True)
@@ -105,7 +105,8 @@ def verify(fx: FileExtraction) -> FileResult:
             findings.append(Finding("stale_stub", f"Newest pay stub is {age} days older than the signed intake",
                                     [newest["page"], _page(it, "signed_date")]))
     declared, seen = fx.bank.get("pages_declared", 0), set(fx.bank.get("pages_seen", []))
-    if declared and len(seen) < declared:
+    bank_pages = sum(1 for p in fx.page_kinds if p["kind"] == "bank_statement")
+    if declared and len(seen) < declared and bank_pages < declared:  # a page number can be misread; count pages too
         missing = sorted(set(range(1, declared + 1)) - seen)
         findings.append(Finding("missing_page", f"Bank statement says {declared} pages; page {', '.join(map(str, missing))} not in the packet",
                                 [_page(fx.bank, "period")]))
@@ -137,12 +138,20 @@ def verify(fx: FileExtraction) -> FileResult:
 
     if not newest:
         findings.append(Finding("no_income_proof", "No readable pay stub for the client", []))
+    if (_v(it, "spouse_stated") or 0) > 0 and not spouse:
+        findings.append(Finding("spouse_income_unproven",
+                                f"Intake lists spouse income of {_v(it, 'spouse_stated'):,.2f} a month but no spouse pay stub was read",
+                                [_page(it, "spouse_stated")]))
     tot = fx.bank.get("credit_total")
     read_sum = round(sum(t["balance"].value for t in fx.tradelines), 2)
     if fx.tradelines and tot is not None and tot.value is not None and abs(read_sum - tot.value) > 0.02:
         findings.append(Finding("creditor_lines_unread",
                                 f"Credit report total is {tot.value:,.2f} but the lines read add to {read_sum:,.2f}",
                                 [tot.cite.page]))
+        gap = round(tot.value - read_sum, 2)
+        if gap > 0:  # carry the unread amount so the creditor total matches the report; a person names the line
+            creditors.append({"name": "Unread credit report line", "last4": None, "balance": gap,
+                              "source": "credit_report_total", "page": tot.cite.page})
     for k in ("child_care", "medical"):
         if (_v(it, k) or 0) > 0:
             findings.append(Finding(f"{k}_proof", f"{k.replace('_', ' ').title()} is client stated; collect a receipt",
