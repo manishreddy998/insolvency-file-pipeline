@@ -194,8 +194,11 @@ def side_by_side(client=None, use_mlflow: bool = True) -> dict:
     from filepipe.gate import decide, load_rules
     from filepipe.verify import verify
 
-    rows = subset(manifest())
-    have_cache = all(cache_path(r["file_id"]).exists() for r in rows)
+    try:
+        rows = subset(manifest())
+    except FileNotFoundError:
+        rows = []
+    have_cache = bool(rows) and all(cache_path(r["file_id"]).exists() for r in rows)
     if not configured() and client is None and not have_cache:
         out = {"skipped": "AZURE_DI_ENDPOINT and AZURE_DI_KEY are not set"}
         RESULTS.mkdir(parents=True, exist_ok=True)
