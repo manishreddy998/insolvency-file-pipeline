@@ -6,6 +6,9 @@ x-app: &app
   user: "${UID:-1000}:${GID:-1000}"
   environment: &env
     HOME: /tmp
+    AZURE_DI_ENDPOINT: ${AZURE_DI_ENDPOINT:-}
+    AZURE_DI_KEY: ${AZURE_DI_KEY:-}
+    AZURE_DI_MODEL: ${AZURE_DI_MODEL:-prebuilt-read}
     DATABASE_URL: postgresql://f2f:f2f@postgres:5432/f2f
     PGHOST: postgres
     LLM_URL: http://llm:11434
