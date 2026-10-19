@@ -90,7 +90,6 @@ with tabs[0]:
             st.subheader("Trustee note")
             n = notes.get(pick)
             st.markdown(n["note"].replace("$", "\\$") if n else "No note yet.")
-            if n:
             st.subheader("Prefill rows")
             pf = pd.DataFrame(res["prefill"])
             st.dataframe(pf, hide_index=True, use_container_width=True, height=240)
