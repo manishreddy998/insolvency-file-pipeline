@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.pytest_cache/
+.dagster_home/
+*.egg-info/
+secrets/
+*.json.key
+
+# generated data and model files stay out of git
+data/
+models/*.gguf
+models/*.part
+models/dl.done
+mlruns/
+mlartifacts/
+
+# dbt build output
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+logs/
+
+results/logs/
+results/review_queue.jsonl
