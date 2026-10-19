@@ -89,7 +89,7 @@ with tabs[0]:
         with right:
             st.subheader("Trustee note")
             n = notes.get(pick)
-            st.write(n["note"] if n else "No note yet.")
+            st.markdown(n["note"].replace("$", "\\$") if n else "No note yet.")
             if n:
                 st.caption(f"Writer: {n['writer']}. Sentences removed by the claim checker: {len(n['dropped'])}.")
             st.subheader("Prefill rows")
