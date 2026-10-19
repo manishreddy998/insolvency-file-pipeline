@@ -1,0 +1,183 @@
+{
+ "extraction": {
+  "labels-v1": {
+   "field_accuracy": 0.9706,
+   "auto_accepted_error_rate": 0.00037,
+   "review_share": 0.0181,
+   "surplus_payment_exact": 0.9967,
+   "file_figures_all_exact": 0.9833,
+   "files_wrong_and_not_flagged": 0,
+   "trap_recall": 1.0,
+   "trap_false_alarms": 0,
+   "seconds_median": 9.36
+  },
+  "layout-v2": {
+   "field_accuracy": 0.9901,
+   "auto_accepted_error_rate": 9e-05,
+   "review_share": 0.015,
+   "surplus_payment_exact": 0.9967,
+   "file_figures_all_exact": 0.99,
+   "files_wrong_and_not_flagged": 0,
+   "trap_recall": 1.0,
+   "trap_false_alarms": 0,
+   "seconds_median": 9.36
+  },
+  "layout-v2-fastocr": {
+   "field_accuracy": 0.9483,
+   "auto_accepted_error_rate": 0.00077,
+   "review_share": 0.0369,
+   "surplus_payment_exact": 0.9433,
+   "file_figures_all_exact": 0.8633,
+   "files_wrong_and_not_flagged": 3,
+   "trap_recall": 0.9464,
+   "trap_false_alarms": 18,
+   "seconds_median": 2.47
+  }
+ },
+ "notes": {
+  "writer": "model",
+  "files": 300,
+  "notes_with_a_sentence_removed": 82,
+  "sentences_removed": 90,
+  "unsupported_claims_removed": 92,
+  "fell_back_to_template": 0,
+  "unsupported_claims_in_final_notes": 0,
+  "seconds_per_note_median": 6.174,
+  "examples_removed": [
+   "The available monthly income for the family is $1350.62, leaving a surplus income payment of $355.48 to cover all expenses and debts.",
+   "The unsecured debt total is $80,637.92, which includes 8 creditors with an average balance of $10,079.94.",
+   "The superintendent standard for this type of case is $33",
+   "The monthly net income of the client is $3602.63, which exceeds the superintendent standard by $4157.0 - 3602.63 = $554.37.",
+   "The family available monthly income is $2215.48, leaving a surplus income payment of $4157.0 - $2215"
+  ]
+ },
+ "hostile": {
+  "writer": "hostile",
+  "files": 300,
+  "notes_with_a_sentence_removed": 300,
+  "sentences_removed": 900,
+  "unsupported_claims_removed": 1200,
+  "fell_back_to_template": 0,
+  "unsupported_claims_in_final_notes": 0,
+  "seconds_per_note_median": 0.0,
+  "examples_removed": [
+   "The client probably hid income.",
+   "Income rose 37% since 2025-01-01.",
+   "They owe $12,345.67 more than listed.",
+   "The client probably hid income.",
+   "Income rose 37% since 2025-01-01."
+  ]
+ },
+ "radar": {
+  "radar-logit-v1": {
+   "auc": 0.9723,
+   "recall_at_workload": 0.9307,
+   "overdue_rule_recall": 0.9175,
+   "recall_at_2pct": 0.7657,
+   "overdue_rule_recall_at_2pct": 0.7459,
+   "flagged_before_any_arrears_share": 0.0495
+  },
+  "radar-gbm-v2": {
+   "auc": 0.9847,
+   "recall_at_workload": 0.9571,
+   "overdue_rule_recall": 0.9175,
+   "recall_at_2pct": 0.7294,
+   "overdue_rule_recall_at_2pct": 0.7459,
+   "flagged_before_any_arrears_share": 0.1287
+  },
+  "radar-intake-only": {
+   "auc": 0.6869,
+   "recall_at_workload": 0.1914,
+   "overdue_rule_recall": 0.9175,
+   "recall_at_2pct": 0.0759,
+   "overdue_rule_recall_at_2pct": 0.7459,
+   "flagged_before_any_arrears_share": 0.0594
+  }
+ },
+ "radar_gate": [
+  {
+   "production": "radar-logit-v1",
+   "candidate": "radar-gbm-v2",
+   "decision": "promote",
+   "reasons": []
+  },
+  {
+   "production": "radar-logit-v1",
+   "candidate": "radar-intake-only",
+   "decision": "block",
+   "reasons": [
+    "AUC 0.6869 is not 0.01 above 0.9723",
+    "recall at workload 0.1914 vs 0.9307"
+   ]
+  }
+ ],
+ "identity": {
+  "resolver": {
+   "precision": 0.9887,
+   "recall": 0.8732,
+   "true_pairs": 15172,
+   "predicted_pairs": 13399,
+   "people_true": 14000,
+   "people_found": 15205
+  },
+  "baseline": {
+   "precision": 0.9302,
+   "recall": 0.2153,
+   "true_pairs": 15172,
+   "predicted_pairs": 3512,
+   "people_true": 14000,
+   "people_found": 21506
+  }
+ },
+ "demand": {
+  "months": [
+   "2022-01-01",
+   "2026-08-01"
+  ],
+  "backtest": {
+   "canada_ex_quebec": {
+    "seasonal-naive": {
+     "mape": 0.0641,
+     "wape": 0.0656
+    },
+    "seasonal-trend": {
+     "mape": 0.0458,
+     "wape": 0.0469
+    }
+   },
+   "ontario": {
+    "seasonal-naive": {
+     "mape": 0.0852,
+     "wape": 0.0869
+    },
+    "seasonal-trend": {
+     "mape": 0.0595,
+     "wape": 0.0609
+    }
+   },
+   "fsa_level": {
+    "seasonal-naive": {
+     "mape": 0.5559,
+     "wape": 0.387
+    },
+    "seasonal-trend": {
+     "mape": 0.5869,
+     "wape": 0.403
+    }
+   },
+   "fsa_level_60_plus_a_year": {
+    "seasonal-naive": {
+     "mape": 0.4234,
+     "wape": 0.3379
+    },
+    "seasonal-trend": {
+     "mape": 0.4533,
+     "wape": 0.3527
+    }
+   }
+  },
+  "ytd_consumer_insolvencies_ex_quebec": 75001,
+  "ytd_share_in_office_fsas": 0.0914,
+  "sheet_total_checks_passed": 727
+ }
+}

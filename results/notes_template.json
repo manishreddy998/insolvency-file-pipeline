@@ -1,0 +1,11 @@
+{
+ "writer": "template",
+ "files": 300,
+ "notes_with_a_sentence_removed": 0,
+ "sentences_removed": 0,
+ "unsupported_claims_removed": 0,
+ "fell_back_to_template": 0,
+ "unsupported_claims_in_final_notes": 0,
+ "seconds_per_note_median": 0.0,
+ "examples_removed": []
+}

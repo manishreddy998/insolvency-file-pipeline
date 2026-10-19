@@ -1,0 +1,17 @@
+{
+ "writer": "model",
+ "files": 300,
+ "notes_with_a_sentence_removed": 82,
+ "sentences_removed": 90,
+ "unsupported_claims_removed": 92,
+ "fell_back_to_template": 0,
+ "unsupported_claims_in_final_notes": 0,
+ "seconds_per_note_median": 6.347,
+ "examples_removed": [
+  "The available monthly income for the family is $1350.62, leaving a surplus income payment of $355.48 to cover all expenses and debts.",
+  "The unsecured debt total is $80,637.92, which includes 8 creditors with an average balance of $10,079.94.",
+  "The superintendent standard for this type of case is $33",
+  "The monthly net income of the client is $3602.63, which exceeds the superintendent standard by $4157.0 - 3602.63 = $554.37.",
+  "The family available monthly income is $2215.48, leaving a surplus income payment of $4157.0 - $2215"
+ ]
+}

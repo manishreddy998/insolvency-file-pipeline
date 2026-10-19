@@ -1,0 +1,81 @@
+{
+ "subset_files": 22,
+ "subset_pages": 146,
+ "captures": {
+  "scan": 8,
+  "fax": 7,
+  "phone": 7
+ },
+ "model": "prebuilt-read",
+ "usage": {
+  "files": 22,
+  "from_cache": 22,
+  "pages_sent": 0,
+  "pages_used_this_month": 292
+ },
+ "production": "layout-v2",
+ "candidate": "azure-di-layout",
+ "decision": "block",
+ "reasons": [
+  "field accuracy 0.9869 vs 0.9964",
+  "trap recall 0.9474 vs 1.0"
+ ],
+ "metrics": {
+  "layout-v2": {
+   "files": 22,
+   "field_accuracy": 0.9964,
+   "fields_scored": 837,
+   "auto_accepted_share": 0.9964,
+   "auto_accepted_error_rate": 0.0,
+   "auto_accepted_wrong": 0,
+   "review_share": 0.0051,
+   "page_type_accuracy": 1.0,
+   "surplus_payment_exact": 1.0,
+   "file_figures_all_exact": 1.0,
+   "files_wrong_and_not_flagged": 0,
+   "traps_planted": 19,
+   "traps_caught": 19,
+   "trap_recall": 1.0,
+   "trap_false_alarms": 0,
+   "trap_precision": 1.0,
+   "clean_files": 8,
+   "clean_files_flagged": 0,
+   "seconds_median": 11.81,
+   "seconds_p95": 13.32
+  },
+  "azure-di-layout": {
+   "files": 22,
+   "field_accuracy": 0.9869,
+   "fields_scored": 837,
+   "auto_accepted_share": 0.9594,
+   "auto_accepted_error_rate": 0.0,
+   "auto_accepted_wrong": 0,
+   "review_share": 0.0247,
+   "page_type_accuracy": 1.0,
+   "surplus_payment_exact": 1.0,
+   "file_figures_all_exact": 1.0,
+   "files_wrong_and_not_flagged": 0,
+   "traps_planted": 19,
+   "traps_caught": 18,
+   "trap_recall": 0.9474,
+   "trap_false_alarms": 0,
+   "trap_precision": 1.0,
+   "clean_files": 8,
+   "clean_files_flagged": 0,
+   "seconds_median": 60.82,
+   "seconds_p95": 64.65
+  }
+ },
+ "by_capture": {
+  "layout-v2": {
+   "fax": 0.9961,
+   "phone": 0.9964,
+   "scan": 0.9967
+  },
+  "azure-di-layout": {
+   "fax": 0.9807,
+   "phone": 1.0,
+   "scan": 0.9801
+  }
+ }
+}

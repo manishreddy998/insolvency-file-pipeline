@@ -1,0 +1,157 @@
+{
+ "report": {
+  "radar-logit-v1": {
+   "auc": 0.9723,
+   "positives": 303,
+   "calls_per_month_avg": 44.7,
+   "recall_at_workload": 0.9307,
+   "overdue_rule_recall": 0.9175,
+   "precision_at_workload": 0.0928,
+   "overdue_rule_precision": 0.0914,
+   "recall_at_top20pct": 0.9769,
+   "recall_at_1pct": 0.5413,
+   "overdue_rule_recall_at_1pct": 0.5446,
+   "precision_at_1pct": 0.3203,
+   "overdue_rule_precision_at_1pct": 0.3223,
+   "recall_at_2pct": 0.7657,
+   "overdue_rule_recall_at_2pct": 0.7459,
+   "precision_at_2pct": 0.2353,
+   "overdue_rule_precision_at_2pct": 0.2292,
+   "annulled_files": 101,
+   "flagged_before_any_arrears": 5,
+   "flagged_before_any_arrears_share": 0.0495,
+   "median_months_warning_model": 3.0,
+   "median_months_warning_overdue_rule": 3.0,
+   "features": [
+    "arrears_payments",
+    "missed_last3",
+    "missed_last6"
+   ]
+  },
+  "radar-gbm-v2": {
+   "auc": 0.9847,
+   "positives": 303,
+   "calls_per_month_avg": 44.7,
+   "recall_at_workload": 0.9571,
+   "overdue_rule_recall": 0.9175,
+   "precision_at_workload": 0.0954,
+   "overdue_rule_precision": 0.0914,
+   "recall_at_top20pct": 1.0,
+   "recall_at_1pct": 0.5182,
+   "overdue_rule_recall_at_1pct": 0.5446,
+   "precision_at_1pct": 0.3066,
+   "overdue_rule_precision_at_1pct": 0.3223,
+   "recall_at_2pct": 0.7294,
+   "overdue_rule_recall_at_2pct": 0.7459,
+   "precision_at_2pct": 0.2241,
+   "overdue_rule_precision_at_2pct": 0.2292,
+   "annulled_files": 101,
+   "flagged_before_any_arrears": 13,
+   "flagged_before_any_arrears_share": 0.1287,
+   "median_months_warning_model": 3.0,
+   "median_months_warning_overdue_rule": 3.0,
+   "features": [
+    "arrears_payments",
+    "missed_last3",
+    "missed_last6",
+    "partial_last3",
+    "nsf_last3",
+    "late_days_last3",
+    "late_trend",
+    "contact_last3",
+    "ever_missed",
+    "months_since_last_miss",
+    "payment_to_income",
+    "intake_flags",
+    "prior_insolvency",
+    "pad",
+    "support_obligation",
+    "persons",
+    "income_salaried",
+    "income_hourly",
+    "income_self_employed",
+    "income_gig",
+    "months_on_book",
+    "months_left"
+   ]
+  },
+  "radar-intake-only": {
+   "auc": 0.6869,
+   "positives": 303,
+   "calls_per_month_avg": 44.7,
+   "recall_at_workload": 0.1914,
+   "overdue_rule_recall": 0.9175,
+   "precision_at_workload": 0.0191,
+   "overdue_rule_precision": 0.0914,
+   "recall_at_top20pct": 0.5215,
+   "recall_at_1pct": 0.0297,
+   "overdue_rule_recall_at_1pct": 0.5446,
+   "precision_at_1pct": 0.0176,
+   "overdue_rule_precision_at_1pct": 0.3223,
+   "recall_at_2pct": 0.0759,
+   "overdue_rule_recall_at_2pct": 0.7459,
+   "precision_at_2pct": 0.0233,
+   "overdue_rule_precision_at_2pct": 0.2292,
+   "annulled_files": 101,
+   "flagged_before_any_arrears": 6,
+   "flagged_before_any_arrears_share": 0.0594,
+   "median_months_warning_model": 0.0,
+   "median_months_warning_overdue_rule": 3.0,
+   "features": [
+    "payment_to_income",
+    "intake_flags",
+    "prior_insolvency",
+    "pad",
+    "support_obligation",
+    "persons",
+    "income_salaried",
+    "income_hourly",
+    "income_self_employed",
+    "income_gig",
+    "months_on_book",
+    "months_left"
+   ]
+  },
+  "_data": {
+   "proposals": 5000,
+   "snapshots": 156943,
+   "train_snapshots": 109163,
+   "test_snapshots": 47780,
+   "test_positive_rate": 0.0063,
+   "overdue_rule_auc": 0.9708,
+   "outcomes": {
+    "active": 3885,
+    "completed": 777,
+    "annulled": 338
+   }
+  }
+ },
+ "gate": [
+  {
+   "production": "radar-logit-v1",
+   "candidate": "radar-gbm-v2",
+   "decision": "promote",
+   "reasons": []
+  },
+  {
+   "production": "radar-logit-v1",
+   "candidate": "radar-intake-only",
+   "decision": "block",
+   "reasons": [
+    "AUC 0.6869 is not 0.01 above 0.9723",
+    "recall at workload 0.1914 vs 0.9307"
+   ]
+  }
+ ],
+ "registry": {
+  "versions": {
+   "radar-logit-v1": 4,
+   "radar-gbm-v2": 5,
+   "radar-intake-only": 6
+  },
+  "production_version": 5,
+  "production_name": "radar-gbm-v2"
+ },
+ "scored_with": "radar-gbm-v2",
+ "active_scored": 3760
+}
