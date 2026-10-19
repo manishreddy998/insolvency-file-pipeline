@@ -59,5 +59,5 @@ def register(cls):
 
 
 def get_extractor(name: str) -> Extractor:
-    from . import local  # noqa: F401  registers the local readers
+    from . import azure, local  # noqa: F401  registers the readers
     return EXTRACTORS[name]()

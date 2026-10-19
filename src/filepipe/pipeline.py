@@ -76,6 +76,17 @@ def step_demand() -> dict:
     return {k: r[k] for k in ("months", "chosen_forecaster", "ytd_share_in_office_fsas")}
 
 
+def step_azure() -> dict:
+    from filepipe.azure_di import side_by_side
+    r = side_by_side(use_mlflow=False)
+    return r if "skipped" in r else {k: r[k] for k in ("subset_files", "subset_pages", "decision", "reasons")}
+
+
+def step_export() -> dict:
+    from filepipe.export_dataverse import export
+    return export()
+
+
 def step_warehouse() -> dict:
     if not database_url():
         return {"skipped": "DATABASE_URL not set"}
@@ -113,7 +124,7 @@ def scoreboard() -> dict:
     return out
 
 
-STEPS = ["packets", "ocr", "extract", "gates", "notes", "radar", "leads", "demand", "warehouse"]
+STEPS = ["packets", "ocr", "extract", "gates", "azure", "notes", "export", "radar", "leads", "demand", "warehouse"]
 
 
 def main(argv=None) -> int:
@@ -131,7 +142,7 @@ def main(argv=None) -> int:
         fn = {"packets": lambda: step_packets(n), "ocr": step_ocr, "extract": step_extract,
               "gates": lambda: step_gates(not a.no_mlflow), "notes": step_notes,
               "radar": lambda: step_radar(not a.no_mlflow), "leads": step_leads, "demand": step_demand,
-              "warehouse": step_warehouse}[s]
+              "warehouse": step_warehouse, "azure": step_azure, "export": step_export}[s]
         r = fn()
         timings[s] = round(time.time() - t, 1)
         print(f"[{s}] {timings[s]}s {json.dumps(r, default=str)[:300]}", flush=True)
