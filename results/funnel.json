@@ -1,0 +1,74 @@
+{
+ "people": 14000,
+ "touches": 24475,
+ "filed_people": 5000,
+ "people_sharing_a_household_phone": 573,
+ "identity_baseline_exact_email_or_phone": {
+  "precision": 0.9302,
+  "recall": 0.2153,
+  "true_pairs": 15172,
+  "predicted_pairs": 3512,
+  "people_true": 14000,
+  "people_found": 21506
+ },
+ "identity_resolver": {
+  "precision": 0.9887,
+  "recall": 0.8732,
+  "true_pairs": 15172,
+  "predicted_pairs": 13399,
+  "people_true": 14000,
+  "people_found": 15205
+ },
+ "raw_touches_per_true_person": 1.748,
+ "by_channel": [
+  {
+   "channel": "chat",
+   "touches": 10391,
+   "spend": 394858.0,
+   "people_first_touch": 7393,
+   "consults": 4638,
+   "filed": 2329,
+   "completed": 363,
+   "annulled": 170,
+   "filed_last_touch_credit": 2198,
+   "cost_per_touch": 38.0,
+   "cost_per_person": 53.41,
+   "cost_per_filed": 169.54,
+   "cost_per_completed": 1087.76,
+   "annulled_share_of_closed": 0.3189
+  },
+  {
+   "channel": "call",
+   "touches": 7849,
+   "spend": 745655.0,
+   "people_first_touch": 4094,
+   "consults": 3382,
+   "filed": 1846,
+   "completed": 265,
+   "annulled": 121,
+   "filed_last_touch_credit": 1926,
+   "cost_per_touch": 95.0,
+   "cost_per_person": 182.13,
+   "cost_per_filed": 403.93,
+   "cost_per_completed": 2813.79,
+   "annulled_share_of_closed": 0.3135
+  },
+  {
+   "channel": "form",
+   "touches": 6235,
+   "spend": 374100.0,
+   "people_first_touch": 3718,
+   "consults": 2595,
+   "filed": 1277,
+   "completed": 215,
+   "annulled": 81,
+   "filed_last_touch_credit": 1328,
+   "cost_per_touch": 60.0,
+   "cost_per_person": 100.62,
+   "cost_per_filed": 292.95,
+   "cost_per_completed": 1740.0,
+   "annulled_share_of_closed": 0.2736
+  }
+ ],
+ "spend_note": "Spend is synthetic: touches x a made up cost per touch per channel."
+}

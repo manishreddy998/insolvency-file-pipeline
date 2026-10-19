@@ -1,0 +1,172 @@
+{
+ "source_files": [
+  "FSA_RTA_Monthly-Mensuel_2022.xlsx",
+  "fsa_rta_monthly_mensuel_2023_dec_2023.xlsx",
+  "fsa_rta_monthly_mensuel_august_2026.xlsx",
+  "fsa_rta_monthly_mensuel_dec_2025.xlsx",
+  "fsa_rta_monthly_mensuel_december-2024.xlsx"
+ ],
+ "months": [
+  "2022-01-01",
+  "2026-08-01"
+ ],
+ "n_months": 56,
+ "fsa_rows": 82822,
+ "sheet_total_checks": 727,
+ "sheet_total_checks_passed": 727,
+ "backtest_holdout_months": 6,
+ "backtest": {
+  "canada_ex_quebec": {
+   "seasonal-naive": {
+    "mape": 0.0641,
+    "wape": 0.0656
+   },
+   "seasonal-trend": {
+    "mape": 0.0458,
+    "wape": 0.0469
+   }
+  },
+  "ontario": {
+   "seasonal-naive": {
+    "mape": 0.0852,
+    "wape": 0.0869
+   },
+   "seasonal-trend": {
+    "mape": 0.0595,
+    "wape": 0.0609
+   }
+  },
+  "fsa_level": {
+   "seasonal-naive": {
+    "mape": 0.5559,
+    "wape": 0.387
+   },
+   "seasonal-trend": {
+    "mape": 0.5869,
+    "wape": 0.403
+   }
+  },
+  "fsa_level_60_plus_a_year": {
+   "seasonal-naive": {
+    "mape": 0.4234,
+    "wape": 0.3379
+   },
+   "seasonal-trend": {
+    "mape": 0.4533,
+    "wape": 0.3527
+   }
+  }
+ },
+ "chosen_forecaster": "seasonal-trend",
+ "chosen_forecaster_fsa": "seasonal-naive",
+ "rows_with_unparsed_fsa_consumer_insolvencies": 29,
+ "forecast_canada_ex_quebec": {
+  "2026-09-01": 10008.0,
+  "2026-10-01": 10127.0,
+  "2026-11-01": 9287.0,
+  "2026-12-01": 8658.0,
+  "2027-01-01": 8929.0,
+  "2027-02-01": 9751.0
+ },
+ "ytd_months": "2026-01-01 to 2026-08-01",
+ "ytd_consumer_insolvencies_ex_quebec": 75001,
+ "ytd_consumer_proposals_ex_quebec": 60420,
+ "ytd_proposal_share": 0.8056,
+ "office_fsas_listed": 73,
+ "office_fsas_found_in_data": 73,
+ "ytd_in_office_fsas": 6857,
+ "ytd_share_in_office_fsas": 0.0914,
+ "forecast_next_6_in_office_fsas": 4841.0,
+ "top_fsas_without_office": [
+  {
+   "fsa": "T5T",
+   "province": "AB",
+   "consumer_insolvencies": 389.0,
+   "office": false
+  },
+  {
+   "fsa": "L7A",
+   "province": "ON",
+   "consumer_insolvencies": 380.0,
+   "office": false
+  },
+  {
+   "fsa": "T6W",
+   "province": "AB",
+   "consumer_insolvencies": 346.0,
+   "office": false
+  },
+  {
+   "fsa": "K0K",
+   "province": "ON",
+   "consumer_insolvencies": 309.0,
+   "office": false
+  },
+  {
+   "fsa": "T2A",
+   "province": "AB",
+   "consumer_insolvencies": 308.0,
+   "office": false
+  },
+  {
+   "fsa": "L6Y",
+   "province": "ON",
+   "consumer_insolvencies": 281.0,
+   "office": false
+  },
+  {
+   "fsa": "L6X",
+   "province": "ON",
+   "consumer_insolvencies": 279.0,
+   "office": false
+  },
+  {
+   "fsa": "L6R",
+   "province": "ON",
+   "consumer_insolvencies": 260.0,
+   "office": false
+  },
+  {
+   "fsa": "L9T",
+   "province": "ON",
+   "consumer_insolvencies": 245.0,
+   "office": false
+  },
+  {
+   "fsa": "T3N",
+   "province": "AB",
+   "consumer_insolvencies": 244.0,
+   "office": false
+  },
+  {
+   "fsa": "V3S",
+   "province": "BC",
+   "consumer_insolvencies": 242.0,
+   "office": false
+  },
+  {
+   "fsa": "T3J",
+   "province": "AB",
+   "consumer_insolvencies": 236.0,
+   "office": false
+  },
+  {
+   "fsa": "K0A",
+   "province": "ON",
+   "consumer_insolvencies": 233.0,
+   "office": false
+  },
+  {
+   "fsa": "L4M",
+   "province": "ON",
+   "consumer_insolvencies": 232.0,
+   "office": false
+  },
+  {
+   "fsa": "L6P",
+   "province": "ON",
+   "consumer_insolvencies": 228.0,
+   "office": false
+  }
+ ]
+}

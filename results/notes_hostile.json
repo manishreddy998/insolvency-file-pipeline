@@ -1,0 +1,17 @@
+{
+ "writer": "hostile",
+ "files": 300,
+ "notes_with_a_sentence_removed": 300,
+ "sentences_removed": 900,
+ "unsupported_claims_removed": 1200,
+ "fell_back_to_template": 0,
+ "unsupported_claims_in_final_notes": 0,
+ "seconds_per_note_median": 0.0,
+ "examples_removed": [
+  "The client probably hid income.",
+  "Income rose 37% since 2025-01-01.",
+  "They owe $12,345.67 more than listed.",
+  "The client probably hid income.",
+  "Income rose 37% since 2025-01-01."
+ ]
+}
