@@ -1,0 +1,19 @@
+# Release rules. A candidate replaces production only if it passes every rule.
+extraction:
+  production: labels-v1
+  candidate: layout-v2
+  negative_control: layout-v2-fastocr   # cheaper OCR, must be blocked
+  rules:
+    max_field_accuracy_drop: 0.005        # 0.5 points
+    max_auto_accepted_error_rate: 0.002   # wrong values let through without review
+    trap_recall_may_not_drop: true
+    surplus_exact_may_not_drop: true
+    silent_wrong_files_may_not_rise: true
+    max_median_seconds: 120
+radar:
+  production: radar-logit-v1
+  candidate: radar-gbm-v2
+  negative_control: radar-intake-only
+  rules:
+    min_auc_gain: 0.01
+    recall_at_workload_may_not_drop: true
