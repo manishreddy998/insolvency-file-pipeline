@@ -20,6 +20,10 @@ def channel_table(people: pd.DataFrame, touches: pd.DataFrame, cluster: pd.Serie
     p["cluster"] = who.index
     p["first_touch"] = first.loc[p["cluster"], "channel"].values
     p["last_touch"] = last.loc[p["cluster"], "channel"].values
+    p["first_ts"] = first.loc[p["cluster"], "ts"].values
+    p["touches"] = t.groupby("cluster").size().loc[p["cluster"]].values
+    p[["cluster", "first_touch", "last_touch", "first_ts", "touches", "consult", "signed", "filed", "file_id"]].to_csv(
+        WORK / "funnel_people.csv", index=False)
     rows = []
     for ch in CHANNELS:
         raw = int((t["channel"] == ch).sum())
@@ -51,6 +55,8 @@ def run(n_files: int = 5000, seed: int = 11) -> dict:
     touches.assign(cluster_baseline=base.values, cluster=res.values).to_csv(WORK / "lead_touches.csv", index=False)
     table = channel_table(people, touches, res)
     table.to_csv(WORK / "funnel_by_channel.csv", index=False)
+    pd.DataFrame([{"channel": c, "cost_per_touch": v} for c, v in COST_PER_TOUCH.items()]).to_csv(
+        WORK / "channel_cost.csv", index=False)
     shared = people["household_of"].notna().sum()
     out = {"people": int(len(people)), "touches": int(len(touches)), "filed_people": int(people["filed"].sum()),
            "people_sharing_a_household_phone": int(shared),
