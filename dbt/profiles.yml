@@ -1,0 +1,12 @@
+file_to_finish:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('PGHOST', 'postgres') }}"
+      port: "{{ env_var('PGPORT', '5432') | int }}"
+      user: "{{ env_var('PGUSER', 'f2f') }}"
+      password: "{{ env_var('PGPASSWORD', 'f2f') }}"
+      dbname: "{{ env_var('PGDATABASE', 'f2f') }}"
+      schema: public
+      threads: 4

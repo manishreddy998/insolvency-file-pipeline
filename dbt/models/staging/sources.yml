@@ -1,0 +1,17 @@
+version: 2
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: packet_files
+      - name: packet_findings
+      - name: prefill_rows
+      - name: proposals
+      - name: proposal_payments
+      - name: radar_scores
+      - name: lead_touches
+      - name: funnel_people
+      - name: channel_cost
+      - name: osb_fsa_monthly
+      - name: osb_fsa_forecast
+      - name: office_fsas
