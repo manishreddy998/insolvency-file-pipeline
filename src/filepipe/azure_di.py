@@ -10,6 +10,7 @@ is enforced before anything is sent. With no settings the Azure extractor is ski
 """
 from __future__ import annotations
 
+import io
 import json
 import math
 import os
@@ -85,11 +86,22 @@ def analyze(pdf: Path, file_id: str, n_pages: int, client=None, run_pages: list 
         raise BudgetExceeded(f"monthly cap of {MONTH_PAGE_CAP} pages reached")
     client = client or make_client()
     t0 = time.perf_counter()
-    with open(pdf, "rb") as fh:
-        poller = client.begin_analyze_document(model_id(), body=fh, content_type="application/octet-stream")
-        result = poller.result()
-    out = result.as_dict() if hasattr(result, "as_dict") else dict(result)
-    out["_seconds"] = round(time.perf_counter() - t0, 3)
+    # The free F0 tier only analyses the first two pages of a document, so send one page per call.
+    import pymupdf
+    src = pymupdf.open(pdf)
+    merged: list = []
+    for i in range(len(src)):
+        one = pymupdf.open()
+        one.insert_pdf(src, from_page=i, to_page=i)
+        poller = client.begin_analyze_document(model_id(), body=io.BytesIO(one.tobytes()),
+                                               content_type="application/octet-stream")
+        res = poller.result()
+        r = res.as_dict() if hasattr(res, "as_dict") else dict(res)
+        for pg in r.get("pages", []):
+            pg = dict(pg)
+            pg["pageNumber"] = i + 1
+            merged.append(pg)
+    out = {"pages": merged, "_seconds": round(time.perf_counter() - t0, 3)}
     out["_model"] = model_id()
     CACHE.mkdir(parents=True, exist_ok=True)
     cp.write_text(json.dumps(out))

@@ -30,7 +30,8 @@ class FakeClient:
 
     def begin_analyze_document(self, model_id, body, content_type=None):
         self.calls += 1
-        doc = pymupdf.open(stream=body.read(), filetype="pdf")
+        self.max_pages = max(getattr(self, "max_pages", 0), len(pymupdf.open(stream=body.getvalue(), filetype="pdf")))
+        doc = pymupdf.open(stream=body.getvalue(), filetype="pdf")
         pages = []
         for i, pg in enumerate(doc):
             words = []
@@ -80,7 +81,8 @@ def test_cache_means_one_call_per_file(packets):
     r = rows[0]
     az.analyze(out / r["path"], r["file_id"], len(r["pages"]), client=client)
     az.analyze(out / r["path"], r["file_id"], len(r["pages"]), client=client)
-    assert client.calls == 1
+    assert client.calls == len(r["pages"])  # one call per page, cached afterwards
+    assert client.max_pages == 1  # F0 only analyses two pages per call, so we send one
     assert az.pages_used_this_month() == len(r["pages"])
 
 
