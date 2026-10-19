@@ -3,8 +3,10 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from rapidfuzz import fuzz
+
 from filepipe.extract.base import Value
-from filepipe.extract.parse import same_name
+from filepipe.extract.parse import same_person
 from filepipe.verify import REVIEW_CONF, TRAP_CODES
 
 
@@ -40,7 +42,7 @@ def _pairs(fx, res, key) -> list[tuple]:
     for who, job, d in true_stubs:
         got = None
         cands = [(i, s) for i, s in enumerate(fx.stubs) if i not in used and
-                 (not isinstance(s.get("employee"), Value) or not s["employee"].value or same_name(s["employee"].value, who, 80))]
+                 (not isinstance(s.get("employee"), Value) or not s["employee"].value or same_person(s["employee"].value, who))]
         # same pay date first; otherwise the next unread stub of that person (its date was misread)
         hit = next(((i, s) for i, s in cands if isinstance(s.get("pay_date"), Value) and s["pay_date"].value == d), None)
         if hit is None:
@@ -54,11 +56,15 @@ def _pairs(fx, res, key) -> list[tuple]:
             out.append((f"stub.{k}", got.get(k) if got else None, truth))
     if key["children"]:
         out.append(("benefit.children", fx.benefit.get("children"), key["children"]))
-    tl = {t["last4"].value: t for t in fx.tradelines}
+    # two accounts can end in the same four digits, so pair on last4 first and then on the creditor name
+    unused = list(fx.tradelines)
     for d in key["debts"]:
         if not d["on_bureau"]:
             continue
-        t = tl.get(d["last4"])
+        same = [t for t in unused if t["last4"].value == d["last4"]]
+        t = max(same, key=lambda t: fuzz.partial_ratio(str(t["creditor"].value).lower(), d["lender"].lower())) if same else None
+        if t is not None:
+            unused.remove(t)
         out.append(("tradeline.last4", t["last4"] if t else None, d["last4"]))
         out.append(("tradeline.balance", t["balance"] if t else None, d["balance"]))
     if key["collection"]:

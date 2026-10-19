@@ -56,6 +56,7 @@ DEBT_KINDS = ["credit card", "line of credit", "instalment loan", "payday loan",
               "income tax", "utility"]
 TX_DATE = re.compile(r"^\W{0,2}(20[0-9OoIl]{2}[-./][0-9OoIl]{2}[-./][0-9OoIl]{2})")
 LAST4 = re.compile(r"[xX%*]{3,5}\s?([0-9OoIlSB]{4})\b")
+LAST4_LOOSE = re.compile(r"[xX%*]{2,5}([0-9OoIlSB]{1,2}[A-Za-z]?[0-9OoIlSB]{1,3}|[0-9OoIlSB]{3}\s[0-9OoIlSB])\b")
 
 
 def _freq(text: str, fuzzy: bool) -> str | None:
@@ -68,6 +69,28 @@ def _freq(text: str, fuzzy: bool) -> str | None:
         if fuzz.ratio(best, t) >= 80:
             return FREQ_WORDS[best]
     return None
+
+
+DOUBT_CONF = 0.6
+CLEAN_MONEY_TOKEN = re.compile(r"^\$?\d{1,3}(?:,\d{3})*\.\d{2}$")
+
+
+def _money_token_clean(raw: str) -> bool:
+    toks = [t for t in raw.split() if re.search(r"\d", t)]
+    return bool(toks) and bool(CLEAN_MONEY_TOKEN.match(toks[-1].rstrip(".")))
+
+
+def _repaired(fieldname: str, raw: str) -> bool:
+    """True when the value only came out after fixing OCR characters, so it should not be auto accepted."""
+    if fieldname in MONEY_FIELDS:
+        if raw.strip().lower() in ("none", "nil", "n/a"):
+            return False
+        return not _money_token_clean(raw)
+    if fieldname == "postal":
+        return not re.fullmatch(r"[A-Z]\d[A-Z] \d[A-Z]\d", raw.strip())
+    if fieldname == "last4":
+        return not re.search(r"\b\d{4}\b", raw)
+    return False
 
 
 def _digits(s: str) -> str:
@@ -96,6 +119,8 @@ class LabelReader(Extractor):
         if ":" in text:
             k, v = text.split(":", 1)
             k = k.strip().lower()
+            if self.fuzzy and len(k) <= 3:  # short labels: "El" or "E1" is EI
+                k = k.replace("l", "i").replace("1", "i").replace("|", "i").replace(".", "")
             if k in labels:
                 return labels[k], v.strip()
             if self.fuzzy:
@@ -147,7 +172,10 @@ class LabelReader(Extractor):
             v = self._value(f, raw)
             if v is None and f in out:
                 continue
-            out[f] = Value(v, Cite(ln.page + 1, ln.text, ln.conf / 100))
+            conf = ln.conf / 100
+            if self.fuzzy and v is not None and _repaired(f, raw):
+                conf = min(conf, DOUBT_CONF)  # we had to fix characters to read it: a person checks it
+            out[f] = Value(v, Cite(ln.page + 1, ln.text, conf))
         return out
 
     # documents
@@ -200,6 +228,12 @@ class LabelReader(Extractor):
             fx.bank.setdefault("credit_total", d["total"])
         for ln in lines:
             m = LAST4.search(ln.text)
+            loose = False
+            if not m and self.fuzzy:
+                m = LAST4_LOOSE.search(ln.text)
+                loose = bool(m) and len(re.sub(r"\D", "", _digits(m.group(1)))) == 4
+                if not loose:
+                    m = None
             if not m:
                 continue
             bal = parse_money(ln.text[m.end():], repair=self.fuzzy)
@@ -212,12 +246,16 @@ class LabelReader(Extractor):
                 if i >= 0:
                     kind, before = k, before[:i].strip()
                     break
-            last4 = _digits(m.group(1)) if self.fuzzy else m.group(1)
-            if not last4.isdigit():
+            last4 = re.sub(r"\D", "", _digits(m.group(1))) if loose else (_digits(m.group(1)) if self.fuzzy else m.group(1))
+            if not last4.isdigit() or len(last4) != 4:
                 continue
-            fx.tradelines.append({"creditor": Value(before, Cite(ln.page + 1, ln.text, ln.conf / 100)),
-                                  "kind": kind, "last4": Value(last4, Cite(ln.page + 1, ln.text, ln.conf / 100)),
-                                  "balance": Value(bal, Cite(ln.page + 1, ln.text, ln.conf / 100))})
+            c = ln.conf / 100
+            c4 = min(c, DOUBT_CONF) if self.fuzzy and (loose or not m.group(1).isdigit()) else c
+            first_amount = next((t for t in ln.text[m.end():].split() if re.search(r"\d", t)), "")
+            cb = min(c, DOUBT_CONF) if self.fuzzy and not _money_token_clean(first_amount) else c
+            fx.tradelines.append({"creditor": Value(before, Cite(ln.page + 1, ln.text, c)),
+                                  "kind": kind, "last4": Value(last4, Cite(ln.page + 1, ln.text, c4)),
+                                  "balance": Value(bal, Cite(ln.page + 1, ln.text, cb))})
 
     def letter(self, lines, fx: FileExtraction):
         d = self.kv(lines, "collection_letter")
@@ -273,7 +311,20 @@ class LayoutV2(LabelReader):
                             s[k].validated = True
                     else:
                         for k in vals:
-                            s[k].cite.conf = min(s[k].cite.conf, 0.6)
+                            s[k].cite.conf = min(s[k].cite.conf, DOUBT_CONF)
+            elif len(vals) == 4 and "net" not in vals:
+                rebuilt = round(vals["gross"] - vals["cpp"] - vals["ei"] - vals["tax"], 2)
+                hit = next((t for t in deposits if abs(t["amount"] - rebuilt) < 0.01), None)
+                if hit:  # net was unreadable but the payroll deposit proves it
+                    s["net"] = Value(rebuilt, hit["cite"], validated=True)
+                    for k in vals:
+                        s[k].validated = True
+                else:
+                    for k in vals:
+                        s[k].cite.conf = min(s[k].cite.conf, DOUBT_CONF)
+            else:  # the stub cannot be checked, so none of its amounts are trusted on their own
+                for k in vals:
+                    s[k].cite.conf = min(s[k].cite.conf, DOUBT_CONF)
             if "net" in s and s["net"].value is not None and any(abs(t["amount"] - s["net"].value) < 0.01 for t in deposits):
                 s["net"].validated = True
         tl = fx.tradelines
@@ -281,6 +332,9 @@ class LayoutV2(LabelReader):
         if tl and tot is not None and tot.value is not None and abs(sum(t["balance"].value for t in tl) - tot.value) < 0.02:
             for t in tl:
                 t["balance"].validated = t["last4"].validated = True
+        elif tl:  # lines do not add up to the report total: something was misread or missed
+            for t in tl:
+                t["balance"].cite.conf = min(t["balance"].cite.conf, DOUBT_CONF)
         # the intake employer should match a stub employer
         emp = fx.intake.get("employer")
         if emp and emp.value:

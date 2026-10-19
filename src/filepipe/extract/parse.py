@@ -87,5 +87,13 @@ def same_name(a: str, b: str, cut: int = 85) -> bool:
     return fuzz.token_sort_ratio(norm_name(a), norm_name(b)) >= cut
 
 
+def same_person(a: str, b: str, cut: int = 75) -> bool:
+    """First and last names both have to agree. Two people in one home share a last name."""
+    ta, tb = norm_name(a).split(), norm_name(b).split()
+    if len(ta) < 2 or len(tb) < 2:
+        return same_name(a, b, 85)
+    return fuzz.ratio(ta[0], tb[0]) >= cut and fuzz.ratio(ta[-1], tb[-1]) >= cut
+
+
 def days_between(a: str, b: str) -> int:
     return (datetime.fromisoformat(b) - datetime.fromisoformat(a)).days
