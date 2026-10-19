@@ -174,7 +174,8 @@ def make_household(i: int, rng: random.Random, fk: Faker, trap_rate: float = 0.5
         collection = {"agency": rng.choice(AGENCIES), "original": ALIASES[name], "last4": extra.last4,
                       "balance": extra.balance, "duplicate": False}
     first, last = fk.first_name(), fk.last_name()
-    postal = fk.postalcode_in_province(prov) if hasattr(fk, "postalcode_in_province") else fk.postalcode()
+    postal = fk.postalcode_in_province(prov).replace(" ", "")
+    postal = f"{postal[:3]} {postal[3:]}"
     h = Household(
         file_id=f"F{i:05d}", packet_date=packet.isoformat(), first=first, last=last,
         street=fk.street_address(), city=fk.city(), province=prov, postal=postal,
