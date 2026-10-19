@@ -47,7 +47,7 @@ def run_ocr(packets: Path = PACKETS, setups=("full", "fast"), workers: int | Non
     return {"packets": len(rows), "setups": list(setups), "seconds": round(time.perf_counter() - t0, 1)}
 
 
-def run_versions(packets: Path = PACKETS, versions=VERSIONS) -> dict:
+def run_versions(packets: Path = PACKETS, versions=VERSIONS, write_report: bool = True) -> dict:
     rows = manifest(packets)
     report = {}
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -64,5 +64,6 @@ def run_versions(packets: Path = PACKETS, versions=VERSIONS) -> dict:
                 triples.append((m, fx, res))
                 fh.write(json.dumps({"extraction": fx.to_dict(), "result": asdict(res)}, default=str) + "\n")
         report[name] = evaluate(triples)
-    (RESULTS / "extraction_eval.json").write_text(json.dumps(report, indent=1))
+    if write_report:
+        (RESULTS / "extraction_eval.json").write_text(json.dumps(report, indent=1))
     return report

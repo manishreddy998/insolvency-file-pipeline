@@ -72,7 +72,7 @@ def main(argv=None) -> int:
         shutil.rmtree(WORK / "ocr", ignore_errors=True)
     setups = ("full", "fast") if "fastocr" in cand or a.packets == 0 else ("full",)
     run_ocr(PACKETS, setups=setups)
-    report = run_versions(PACKETS, versions=[cfg["production"], cand])
+    report = run_versions(PACKETS, versions=[cfg["production"], cand], write_report=False)
     d = decide(report[cfg["production"]], report[cand], cfg["rules"])
     out = {"production": cfg["production"], "candidate": cand, **d,
            "production_metrics": {k: v for k, v in report[cfg["production"]].items() if not isinstance(v, dict)},
