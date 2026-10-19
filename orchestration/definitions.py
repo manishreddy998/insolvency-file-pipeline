@@ -29,6 +29,16 @@ def extraction_gate(context: AssetExecutionContext) -> dict:
     return _meta(context, p.step_gates())
 
 
+@asset(group_name="intake", deps=[extraction_gate])
+def azure_side_by_side(context: AssetExecutionContext) -> dict:
+    return _meta(context, p.step_azure())
+
+
+@asset(group_name="intake", deps=[extraction_eval])
+def dataverse_export(context: AssetExecutionContext) -> dict:
+    return _meta(context, p.step_export())
+
+
 @asset(group_name="intake", deps=[extraction_eval])
 def trustee_notes(context: AssetExecutionContext) -> dict:
     return _meta(context, p.step_notes())
@@ -49,7 +59,7 @@ def osb_demand(context: AssetExecutionContext) -> dict:
     return _meta(context, p.step_demand())
 
 
-@asset(group_name="warehouse", deps=[extraction_gate, trustee_notes, survival_radar, lead_to_file, osb_demand])
+@asset(group_name="warehouse", deps=[extraction_gate, azure_side_by_side, dataverse_export, trustee_notes, survival_radar, lead_to_file, osb_demand])
 def warehouse(context: AssetExecutionContext) -> dict:
     out = p.step_warehouse()
     p.scoreboard()
@@ -59,5 +69,5 @@ def warehouse(context: AssetExecutionContext) -> dict:
 file_to_finish = define_asset_job("file_to_finish", selection=AssetSelection.all())
 growth_only = define_asset_job("growth_only", selection=AssetSelection.groups("growth"))
 
-defs = Definitions(assets=[packets, ocr_text, extraction_eval, extraction_gate, trustee_notes, survival_radar,
+defs = Definitions(assets=[packets, ocr_text, extraction_eval, extraction_gate, azure_side_by_side, dataverse_export, trustee_notes, survival_radar,
                            lead_to_file, osb_demand, warehouse], jobs=[file_to_finish, growth_only])
