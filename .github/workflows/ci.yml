@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests-and-gates:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: f2f
+          POSTGRES_PASSWORD: f2f
+          POSTGRES_DB: f2f
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U f2f -d f2f" --health-interval 3s --health-retries 40
+    env:
+      DATABASE_URL: postgresql://f2f:f2f@localhost:5432/f2f
+      PGHOST: localhost
+      PYTHONPATH: src:.
+      DBT_PROFILES_DIR: dbt
+      LLM_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr libgl1
+      - run: pip install -r requirements.txt
+      - name: Unit tests
+        run: pytest -q -p no:cacheprovider
+      - name: Small pipeline run (24 packets, no local model)
+        run: python -m filepipe.pipeline --small --no-mlflow
+      - name: Extraction gate promotes the better reader
+        run: python -m filepipe.gate --no-mlflow
+      - name: Extraction gate blocks the negative control
+        run: python -m filepipe.gate --no-mlflow --candidate layout-v2-fastocr --expect-block
+      - name: Hostile note writer is fully blocked
+        run: python -m filepipe.notes_run hostile
+      - name: Azure comparison is skipped cleanly without a key
+        run: python -m filepipe.azure_di --no-mlflow
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results
+          path: results/*.json
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build
