@@ -175,9 +175,8 @@ def log_and_register(res: dict, decisions: list[dict]) -> dict:
     import mlflow.sklearn
     from mlflow import MlflowClient
 
-    from filepipe.config import mlflow_uri
-    mlflow.set_tracking_uri(mlflow_uri())
-    mlflow.set_experiment("survival-radar")
+    from filepipe.config import mlflow_experiment
+    mlflow_experiment("survival-radar")
     client = MlflowClient()
     versions = {}
     for name, m in res["report"].items():
