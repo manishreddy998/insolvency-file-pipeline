@@ -1,0 +1,50 @@
+version: 2
+models:
+  - name: dim_office_fsa
+    columns:
+      - name: fsa
+        tests: [unique, not_null]
+  - name: fct_file
+    columns:
+      - name: file_id
+        tests: [unique, not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              values: ["ready", "needs review"]
+  - name: fct_surplus_income
+    columns:
+      - name: file_id
+        tests:
+          - unique
+          - not_null
+          - relationships: {to: ref('fct_file'), field: file_id}
+      - name: persons
+        tests: [not_null]
+  - name: fct_proposal_payment
+    columns:
+      - name: file_id
+        tests: [not_null]
+      - name: outcome
+        tests:
+          - accepted_values:
+              values: ["active", "completed", "annulled"]
+  - name: fct_radar_scores
+    columns:
+      - name: file_id
+        tests: [unique, not_null]
+      - name: risk
+        tests: [not_null]
+  - name: fct_funnel
+    columns:
+      - name: channel
+        tests:
+          - unique
+          - accepted_values:
+              values: ["chat", "call", "form"]
+  - name: fct_fsa_filings
+    columns:
+      - name: fsa
+        tests: [not_null]
+      - name: month
+        tests: [not_null]
