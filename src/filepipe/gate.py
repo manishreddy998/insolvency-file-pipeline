@@ -41,9 +41,8 @@ def log_mlflow(report: dict, decisions: dict) -> None:
     try:
         import mlflow
 
-        from filepipe.config import mlflow_uri
-        mlflow.set_tracking_uri(mlflow_uri())
-        mlflow.set_experiment("packet-extraction")
+        from filepipe.config import mlflow_experiment
+        mlflow_experiment("packet-extraction")
         for name, m in report.items():
             with mlflow.start_run(run_name=name):
                 mlflow.log_param("extractor", name)

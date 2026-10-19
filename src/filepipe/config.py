@@ -28,6 +28,17 @@ def mlflow_uri() -> str:
     return os.environ.get("MLFLOW_TRACKING_URI", f"sqlite:///{DATA / 'mlflow.db'}")
 
 
+def mlflow_experiment(name: str) -> None:
+    """Point MLflow at the tracking store and keep artifacts under data/, which every container mounts."""
+    import mlflow
+    mlflow.set_tracking_uri(mlflow_uri())
+    if mlflow.get_experiment_by_name(name) is None:
+        art = DATA / "mlartifacts" / name
+        art.mkdir(parents=True, exist_ok=True)
+        mlflow.create_experiment(name, artifact_location=art.resolve().as_uri())
+    mlflow.set_experiment(name)
+
+
 def ensure_dirs() -> None:
     for p in (DATA, RESULTS, PACKETS, RAW, WORK):
         p.mkdir(parents=True, exist_ok=True)

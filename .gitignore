@@ -24,3 +24,5 @@ logs/
 
 results/logs/
 results/review_queue.jsonl
+dbt/.user.yml
+mlartifacts/
