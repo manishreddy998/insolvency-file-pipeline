@@ -51,6 +51,8 @@ def load(url: str | None = None, extractor: str = "layout-v2") -> dict:
     if (WORK / f"extract.{extractor}.jsonl").exists():
         frames.update(packet_tables(extractor))
     for name, df in frames.items():
+        with eng.begin() as con:  # dbt views sit on these tables; they are rebuilt right after
+            con.execute(text(f'drop table if exists raw."{name}" cascade'))
         df.head(0).to_sql(name, eng, schema="raw", if_exists="replace", index=False)
         buf = io.StringIO()
         df.to_csv(buf, index=False, header=False)
