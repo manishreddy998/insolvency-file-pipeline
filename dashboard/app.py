@@ -29,7 +29,7 @@ def page_label(pages: list) -> str:
 
 
 def plain(df: pd.DataFrame) -> pd.DataFrame:
-    return df.rename(columns=lambda c: str(c).replace("_", " ").capitalize())
+    return df.rename(columns=lambda c: "FSA" if str(c).lower() == "fsa" else str(c).replace("_", " ").capitalize())
 
 
 def whole_sentences(note: str) -> str:
