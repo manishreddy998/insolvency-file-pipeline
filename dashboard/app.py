@@ -1,6 +1,8 @@
 """File to Finish dashboard. Every person, file and lead here is synthetic. FSA counts are real OSB data."""
 from __future__ import annotations
 
+import html
+
 import json
 import os
 from pathlib import Path
@@ -89,7 +91,8 @@ with tabs[0]:
         with right:
             st.subheader("Trustee note")
             n = notes.get(pick)
-            st.markdown(n["note"].replace("$", "\\$") if n else "No note yet.")
+            text = html.escape(n["note"]).replace("$", "&#36;").replace("*", "&#42;").replace("_", "&#95;") if n else "No note yet."
+            st.markdown(f"<div style='line-height:1.6'>{text}</div>", unsafe_allow_html=True)
             st.subheader("Prefill rows")
             pf = pd.DataFrame(res["prefill"])
             st.dataframe(pf, hide_index=True, use_container_width=True, height=240)
