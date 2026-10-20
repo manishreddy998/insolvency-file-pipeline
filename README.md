@@ -108,10 +108,10 @@ Azure read the text very cleanly, but on this set the local reader scored higher
 
 ### Trustee notes (300 files)
 
-| Writer | Notes with a sentence removed | Claims removed | Unsupported claims left in final notes |
+| Note source | Notes with a sentence removed | Claims removed | Unsupported claims left in final notes |
 |---|---|---|---|
 | Local model (Qwen2.5 1.5B, Ollama) | 82 | 92 | 0 |
-| Hostile test writer (always invents) | 300 | 1,200 | 0 |
+| Stress test that always adds false claims | 300 | 1,200 | 0 |
 
 Median 6.2 seconds a note on CPU.
 
