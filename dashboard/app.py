@@ -28,6 +28,18 @@ def page_label(pages: list) -> str:
     return f"(page {p[0]})" if len(p) == 1 else f"(pages {', '.join(p)})"
 
 
+def plain(df: pd.DataFrame) -> pd.DataFrame:
+    return df.rename(columns=lambda c: str(c).replace("_", " ").capitalize())
+
+
+def whole_sentences(note: str) -> str:
+    note = note.strip()
+    end = max(note.rfind(". "), note.rfind(".\n"))
+    if note.endswith((".", "!", "?")) or end < 0:
+        return note
+    return note[: end + 1]
+
+
 def sql(q: str) -> pd.DataFrame | None:
     if not DB:
         return None
@@ -82,7 +94,7 @@ with tabs[0]:
         c3.metric("Need a person", int((qdf["status"] != "ready").sum()))
         only = st.toggle("Only files that need review", value=True)
         view = qdf[qdf["status"] != "ready"] if only else qdf
-        st.dataframe(view.rename(columns=lambda c: c.replace("_", " ").capitalize()), hide_index=True, use_container_width=True, height=300)
+        st.dataframe(plain(view), hide_index=True, use_container_width=True, height=300)
         pick = st.selectbox("Open a file", view["file_id"].tolist() or qdf["file_id"].tolist())
         res = next(r["result"] for r in rows if r["result"]["file_id"] == pick)
         left, right = st.columns([3, 2])
@@ -98,11 +110,11 @@ with tabs[0]:
         with right:
             st.subheader("Trustee note")
             n = notes.get(pick)
-            text = html.escape(n["note"]).replace("$", "&#36;").replace("*", "&#42;").replace("_", "&#95;") if n else "No note yet."
+            text = html.escape(whole_sentences(n["note"])).replace("$", "&#36;").replace("*", "&#42;").replace("_", "&#95;") if n else "No note yet."
             st.markdown(f"<div style='line-height:1.6'>{text}</div>", unsafe_allow_html=True)
             st.subheader("Prefill rows")
             pf = pd.DataFrame(res["prefill"])
-            st.dataframe(pf, hide_index=True, use_container_width=True, height=240)
+            st.dataframe(plain(pf), hide_index=True, use_container_width=True, height=240)
             ok = st.checkbox("I checked the figures above", key=f"ok-{pick}")
             st.download_button("Export prefill CSV", pf.to_csv(index=False).encode(), f"{pick}_prefill.csv",
                                disabled=not ok)
@@ -117,14 +129,14 @@ with tabs[1]:
         best = rr["scored_with"]
         m = rr["report"][best]
         c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Model in production", best)
+        c1.metric("Model in use", {"radar-gbm-v2": "Gradient boosting", "radar-logit-v1": "Logistic regression"}.get(best, best))
         c2.metric("AUC", m["auc"])
         c3.metric("Recall at the overdue list size", m["recall_at_workload"], f"{m['recall_at_workload'] - m['overdue_rule_recall']:+.3f} vs overdue rule")
         c4.metric("Annulled files flagged before any arrears", f"{m['flagged_before_any_arrears_share']:.1%}")
         st.caption("Label: deemed annulled (BIA 66.31, three payments behind) within the next three months. "
                    "Synthetic payment histories; the gap over the overdue rule must be measured again on real files.")
         sc = pd.read_csv(p)
-        st.dataframe(sc.head(40), hide_index=True, use_container_width=True)
+        st.dataframe(plain(sc.head(40)), hide_index=True, use_container_width=True)
 
 # 3. funnel
 with tabs[2]:
@@ -141,7 +153,7 @@ with tabs[2]:
             c1.metric("Touches", fun["touches"])
             c2.metric("People found", b["people_found"], f"{b['people_found'] - b['people_true']:+d} vs answer key")
             c3.metric("Duplicate pairs found", f"{b['recall']:.1%}", f"{b['recall'] - a['recall']:+.1%} vs exact match rule")
-        st.dataframe(fdf, hide_index=True, use_container_width=True)
+        st.dataframe(plain(fdf), hide_index=True, use_container_width=True)
         st.plotly_chart(px.bar(fdf, x="channel", y=["cost_per_filed", "cost_per_completed"], barmode="group",
                                title="Cost per filed and per completed proposal (synthetic spend)"), use_container_width=True)
 
@@ -156,7 +168,7 @@ with tabs[3]:
         c2.metric("Share in an FSA with a Farber office", f"{dem['ytd_share_in_office_fsas']:.1%}")
         c3.metric("Forecast error, Ontario, 6 months held out (MAPE)", f"{dem['backtest']['ontario'][dem['chosen_forecaster']]['mape']:.1%}")
         st.subheader("Busiest FSAs without an office, this year")
-        st.dataframe(pd.DataFrame(dem["top_fsas_without_office"]), hide_index=True, use_container_width=True)
+        st.dataframe(plain(pd.DataFrame(dem["top_fsas_without_office"])), hide_index=True, use_container_width=True)
         fc = pd.DataFrame([{"month": k, "forecast": v} for k, v in dem["forecast_canada_ex_quebec"].items()])
         st.plotly_chart(px.bar(fc, x="month", y="forecast", title="Next six months, consumer insolvencies outside Quebec"),
                         use_container_width=True)
