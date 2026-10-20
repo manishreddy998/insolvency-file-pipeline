@@ -21,6 +21,13 @@ st.markdown("<style>.block-container{padding-top:1.5rem} h1{font-weight:600}</st
 
 
 @st.cache_data(ttl=60)
+def page_label(pages: list) -> str:
+    p = [str(x) for x in pages if x]
+    if not p:
+        return ""
+    return f" (page {p[0]})" if len(p) == 1 else f" (pages {', '.join(p)})"
+
+
 def sql(q: str) -> pd.DataFrame | None:
     if not DB:
         return None
@@ -75,14 +82,14 @@ with tabs[0]:
         c3.metric("Need a person", int((qdf["status"] != "ready").sum()))
         only = st.toggle("Only files that need review", value=True)
         view = qdf[qdf["status"] != "ready"] if only else qdf
-        st.dataframe(view, hide_index=True, use_container_width=True, height=300)
+        st.dataframe(view.rename(columns=lambda c: c.replace("_", " ").capitalize()), hide_index=True, use_container_width=True, height=300)
         pick = st.selectbox("Open a file", view["file_id"].tolist() or qdf["file_id"].tolist())
         res = next(r["result"] for r in rows if r["result"]["file_id"] == pick)
         left, right = st.columns([3, 2])
         with left:
             st.subheader("Checks")
             for f in res["findings"]:
-                st.write(f"**{f['code'].replace('_', ' ')}**: {f['message']} (pages {', '.join(map(str, [p for p in f['pages'] if p]))})")
+                st.write(f"**{f['code'].replace('_', ' ')}**: {f['message']} {page_label(f['pages'])}")
             if res["review_fields"]:
                 st.write("Fields to confirm:", ", ".join(x["field"] for x in res["review_fields"]))
             st.subheader("Surplus income, Directive 11R2-2026")
