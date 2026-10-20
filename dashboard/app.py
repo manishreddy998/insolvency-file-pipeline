@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import html
+import re
 
 import json
 import os
@@ -26,6 +27,15 @@ def page_label(pages: list) -> str:
     if not p:
         return ""
     return f"(page {p[0]})" if len(p) == 1 else f"(pages {', '.join(p)})"
+
+
+def words(code: str) -> str:
+    """Turn a code like support_not_declared or form65.line1_debtor_net_income into plain words."""
+    m = re.match(r"form65\.(?:line(\d+)_)?(.*)", str(code))
+    if m:
+        rest = m.group(2).replace("_", " ").replace("share pct", "share (%)").replace("non discretionary", "non-discretionary")
+        return f"Form 65 line {m.group(1)}: {rest}" if m.group(1) else f"Form 65: {rest}"
+    return str(code).replace("_", " ").capitalize()
 
 
 def plain(df: pd.DataFrame) -> pd.DataFrame:
@@ -83,7 +93,7 @@ with tabs[0]:
             res = r["result"]
             checks = [f["code"] for f in res["findings"] if f["severity"] == "check"]
             q.append({"file_id": res["file_id"], "status": "needs review" if checks or res["review_fields"] else "ready",
-                      "checks": ", ".join(checks), "fields_to_review": len(res["review_fields"]),
+                      "checks": ", ".join(words(c) for c in checks), "fields_to_review": len(res["review_fields"]),
                       "net_income": res["figures"]["debtor_monthly"], "persons": res["figures"]["persons"],
                       "surplus_payment": (res.get("surplus") or {}).get("line15_monthly_payment"),
                       "unsecured": res["figures"]["unsecured_total"]})
@@ -101,9 +111,9 @@ with tabs[0]:
         with left:
             st.subheader("Checks")
             for f in res["findings"]:
-                st.write(f"**{f['code'].replace('_', ' ')}**: {f['message']} {page_label(f['pages'])}")
+                st.write(f"**{words(f['code'])}**: {f['message']} {page_label(f['pages'])}")
             if res["review_fields"]:
-                st.write("Fields to confirm:", ", ".join(x["field"] for x in res["review_fields"]))
+                st.write("Fields to confirm:", ", ".join(words(x["field"]) for x in res["review_fields"]))
             st.subheader("Surplus income, Directive 11R2-2026")
             for s in (res.get("surplus") or {}).get("steps", []):
                 st.write("- " + s)
@@ -114,7 +124,7 @@ with tabs[0]:
             st.markdown(f"<div style='line-height:1.6'>{text}</div>", unsafe_allow_html=True)
             st.subheader("Prefill rows")
             pf = pd.DataFrame(res["prefill"])
-            st.dataframe(plain(pf), hide_index=True, use_container_width=True, height=240)
+            st.dataframe(plain(pf.assign(field=pf["field"].map(words)) if "field" in pf else pf), hide_index=True, use_container_width=True, height=240)
             ok = st.checkbox("I checked the figures above", key=f"ok-{pick}")
             st.download_button("Export prefill CSV", pf.to_csv(index=False).encode(), f"{pick}_prefill.csv",
                                disabled=not ok)
@@ -154,7 +164,9 @@ with tabs[2]:
             c2.metric("People found", b["people_found"], f"{b['people_found'] - b['people_true']:+d} vs answer key")
             c3.metric("Duplicate pairs found", f"{b['recall']:.1%}", f"{b['recall'] - a['recall']:+.1%} vs exact match rule")
         st.dataframe(plain(fdf), hide_index=True, use_container_width=True)
-        st.plotly_chart(px.bar(fdf, x="channel", y=["cost_per_filed", "cost_per_completed"], barmode="group",
+        st.plotly_chart(px.bar(fdf.rename(columns={"cost_per_filed": "Cost per filed file", "cost_per_completed": "Cost per completed file"}),
+                               x="channel", y=["Cost per filed file", "Cost per completed file"], barmode="group",
+                               labels={"value": "Cost ($)", "variable": "", "channel": "Channel"},
                                title="Cost per filed and per completed proposal (synthetic spend)"), use_container_width=True)
 
 # 4. demand
