@@ -25,7 +25,7 @@ def page_label(pages: list) -> str:
     p = [str(x) for x in pages if x]
     if not p:
         return ""
-    return f" (page {p[0]})" if len(p) == 1 else f" (pages {', '.join(p)})"
+    return f"(page {p[0]})" if len(p) == 1 else f"(pages {', '.join(p)})"
 
 
 def sql(q: str) -> pd.DataFrame | None:
